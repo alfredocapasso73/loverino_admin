@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+.bg-gradient-primary{
+  height: 100vh !important;
+}
+.login-pic {
+  text-align: center;
+  height: 300px;
+  width: 300px !important;
+}
+.login_container{
+  padding: 40px !important;
+}
+.lover_alert{
+  margin: 5px 0px 20px 0px;
+}
+.loverino_logo{
+  font-size: 0.65rem;
+}
+.pointer{
+  cursor: pointer;
+}
