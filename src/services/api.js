@@ -1,4 +1,6 @@
 const API_BASE = "http://localhost:8081/api/v1/texas";
+const API_BASE_GEO = "http://localhost:8081/api/v1/geo";
+const API_BASE_USER = "http://localhost:8081/api/v1/user";
 
 const header = {
     method: "GET"
@@ -50,15 +52,124 @@ export async function api_login(username, password){
     }
 }
 
-export async function api_get_users(current_page, users_per_page){
+export async function api_get_users(current_page, users_per_page, currentSort, currentSortDirection){
     try{
         const url_key = {auth: true, url: `${API_BASE}/getUsers`, method: 'POST'};
         const body = {
             users_per_page: users_per_page
             ,current_page: current_page
+            ,sort_by: currentSort
+            ,sort_dir: currentSortDirection
         };
         const request = await make_request(url_key, body);
         return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_get_user(id){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/user/${id}`, method: 'GET'};
+        const request = await make_request(url_key);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_get_regions(){
+    try{
+        const url_key = {auth: false, url: `${API_BASE_GEO}/region`, method: 'GET'};
+        const request = await make_request(url_key);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export function api_convert_pictures(pictures){
+    const base_url = `${API_BASE_USER}/getImage/small-picture-`;
+    const pic_array = [];
+    pictures.map(el => {
+        pic_array.push({src: `${base_url}${el}`, id: el});
+    });
+    return pic_array;
+}
+
+export async function api_get_cities(region){
+    try{
+        const url_key = {auth: false, url: `${API_BASE_GEO}/city/${region}`, method: 'GET'};
+        const request = await make_request(url_key);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_save_user(user){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/user`, method: 'POST'};
+        const body = {user: user};
+        const request = await make_request(url_key, body);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_search_user(query){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/searchUser`, method: 'POST'};
+        const body = {query: query};
+        const request = await make_request(url_key, body);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_delete_picture(picture_id, user_id){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/deletePicture`, method: 'POST'};
+        const body = {picture_id: picture_id,user_id: user_id};
+        const request = await make_request(url_key, body);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
+export async function api_upload_picture(file, user_id){
+    try{
+        const formData = new FormData();
+        formData.append('picture', file);
+        formData.append('user_id', user_id);
+        const header = {
+            method: "POST"
+            ,headers: {
+                "Authorization": `Bearer ${localStorage.getItem("admin_token")}`
+            },
+            body: formData
+        };
+        const url = `${API_BASE}/uploadPictureAdmin`;
+        const response = await fetch(`${url}`, header);
+        const data = await response.json();
+        return {status: response.status, data: data};
     }
     catch(exception){
         console.log('exception',exception);

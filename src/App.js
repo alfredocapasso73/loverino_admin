@@ -2,6 +2,7 @@ import React from "react";
 import { Routes ,Route, BrowserRouter } from 'react-router-dom';
 import Index from "./pages/Index/Index";
 import Home from "./pages/Home/Home";
+import User from './pages/User/User';
 import Layout from "./components/Layout";
 import './App.css';
 
@@ -14,6 +15,7 @@ function App() {
           </Route>
             <Route element={<Layout />}>
                 <Route path="/home" element={<Home />} />
+                <Route path="/user/:id" element={<User />} />
             </Route>
         </Routes>
       </BrowserRouter>

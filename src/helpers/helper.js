@@ -1,3 +1,5 @@
+import React from "react";
+
 const formatLeadingZeroNumber = (nr) => {
     return nr < 10 ? `0${nr}` : nr;
 }
@@ -5,7 +7,7 @@ const formatLeadingZeroNumber = (nr) => {
 export function human_readable_date(date){
     const d = new Date(date);
     const year = d.getFullYear();
-    const month = formatLeadingZeroNumber(d.getMonth());
+    const month = formatLeadingZeroNumber(d.getMonth()+1);
     const day = formatLeadingZeroNumber(d.getDate());
     const hours = formatLeadingZeroNumber(d.getHours());
     const minutes = formatLeadingZeroNumber(d.getMinutes());
@@ -20,3 +22,4 @@ export function get_age_from_birthday(birthday){
     const difference = current_date - birthday_timestamp;
     return Math.floor(difference / 31557600000);
 }
+

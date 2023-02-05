@@ -1,11 +1,14 @@
 import React, {useState} from "react";
-import {Navigate, useOutlet, Link, Outlet} from 'react-router-dom';
+import {Navigate, useOutlet, Link} from 'react-router-dom';
 import {useNavigate} from "react-router-dom";
+import {api_search_user} from "../services/api";
 
 const Layout = () => {
     const navigate = useNavigate();
     const outlet = useOutlet();
     const [showLogoutDropDown, setShowLogoutDropDown] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showModal, setShowModal] = useState(false);
 
     if(!window.localStorage.getItem('admin_token')){
         return <Navigate to="/"/>
@@ -16,8 +19,44 @@ const Layout = () => {
         navigate('/');
     }
 
+    const searchUser = async () => {
+        try{
+            const result = await api_search_user(searchQuery);
+            if(result?.status === 500){
+                setShowModal(true);
+                setTimeout(function(){
+                    setShowModal(false);
+                }, 2000);
+            }
+            else{
+                navigate(`/user/${result.data.user._id}`);
+            }
+
+        }
+        catch(exception){
+            console.log('exception',exception);
+        }
+    }
+
     return(
         <div id="wrapper">
+            {
+                showModal &&
+                <div className="modal force_show" id="exampleModal" tabIndex="-1" role="dialog"
+                     aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id="exampleModalLabel">Search Result</h5>
+                            </div>
+                            <div className="modal-body">
+                                <b style={{color: 'red'}}>User not found!</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
             <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
                 <a className="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
                     <div className="sidebar-brand-icon rotate-n-15">
@@ -27,9 +66,10 @@ const Layout = () => {
                 </a>
                 <hr className="sidebar-divider my-0" />
                 <li className="nav-item active">
-                    <a className="nav-link" href="index.html">
+                    <Link className="nav-link" to={'/home'}>
                         <i className="fas fa-fw fa-users"></i>
-                        <span>Users</span></a>
+                        <span>Users</span>
+                    </Link>
                 </li>
                 <hr className="sidebar-divider" />
                 <div className="sidebar-heading">
@@ -57,15 +97,12 @@ const Layout = () => {
             <div id="content-wrapper" className="d-flex flex-column">
                 <div id="content">
                     <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                        <button id="sidebarToggleTop" className="btn btn-link d-md-none rounded-circle mr-3">
-                            <i className="fa fa-bars"></i>
-                        </button>
                         <div className="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                             <div className="input-group">
-                                <input type="text" className="form-control bg-light border-0 small" placeholder="Search for user..."
-                                       aria-label="Search" aria-describedby="basic-addon2" />
+                                <input type="text" className="form-control bg-light border-0 small" placeholder="Search for user...ID or email"
+                                       aria-label="Search" aria-describedby="basic-addon2" onChange={e => setSearchQuery(e.target.value)}/>
                                     <div className="input-group-append">
-                                        <button className="btn btn-primary" type="button">
+                                        <button className="btn btn-primary" type="button" onClick={searchUser}>
                                             <i className="fas fa-search fa-sm"></i>
                                         </button>
                                     </div>
@@ -76,7 +113,7 @@ const Layout = () => {
                             <li className={`nav-item dropdown no-arrow ${showLogoutDropDown ? 'show' : ''}`}>
                                 <div className="pointer nav-link dropdown-toggle" onClick={e => setShowLogoutDropDown(!showLogoutDropDown)}>
                                     <span className="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
-                                    <img className="img-profile rounded-circle" src="img/undraw_profile.svg" alt="" />
+                                    <img className="img-profile rounded-circle" src="/img/undraw_profile.svg" alt="" />
                                 </div>
                                 <div className={`dropdown-menu dropdown-menu-right shadow animated--grow-in ${showLogoutDropDown ? 'show' : ''}`} aria-labelledby="userDropdown">
                                     <div className="pointer dropdown-item" onClick={logout}>
