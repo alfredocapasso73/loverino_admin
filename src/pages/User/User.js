@@ -1,9 +1,19 @@
 import React, {useState, useEffect ,useRef} from "react";
-import {api_convert_pictures, api_get_cities, api_get_regions, api_get_user, api_save_user, api_delete_picture, api_upload_picture} from '../../services/api';
-import {useParams} from "react-router-dom";
+import {
+    api_convert_pictures,
+    api_get_cities,
+    api_get_regions,
+    api_get_user,
+    api_save_user,
+    api_delete_picture,
+    api_upload_picture,
+    api_delete_user
+} from '../../services/api';
+import {useParams, useNavigate} from "react-router-dom";
 
 const User = () => {
     const params = useParams();
+    const navigate = useNavigate();
     const [user, setUser] = useState(undefined);
     const [regions, setRegions] = useState([]);
     const [cities, setCities] = useState([]);
@@ -138,7 +148,17 @@ const User = () => {
     }
 
     const confirmDeleteUser = async () => {
-        console.log("confirmDeleteUser");
+        try{
+            const result = await api_delete_user(user._id);
+            if(result?.status === 200 && result?.data?.message === 'user_removed'){
+                return navigate('/home');
+            }
+            console.log("result:",result);
+        }
+        catch(exception){
+            console.log('exception',exception);
+        }
+
     }
 
     const getUser = async () => {

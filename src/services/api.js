@@ -70,6 +70,21 @@ export async function api_get_users(current_page, users_per_page, currentSort, c
     }
 }
 
+export async function api_delete_user(user_id){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/deleteUser`, method: 'DELETE'};
+        const body = {
+            user_id: user_id
+        };
+        const request = await make_request(url_key, body);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
 export async function api_get_user(id){
     try{
         const url_key = {auth: true, url: `${API_BASE}/user/${id}`, method: 'GET'};
