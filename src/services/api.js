@@ -1,6 +1,7 @@
-const API_BASE = "http://localhost:8081/api/v1/texas";
-const API_BASE_GEO = "http://localhost:8081/api/v1/geo";
-const API_BASE_USER = "http://localhost:8081/api/v1/user";
+const API_BASE_URL = process.env.REACT_APP_API_BASE;
+const API_BASE = `${API_BASE_URL}/api/v1/texas`;
+const API_BASE_GEO = `${API_BASE_URL}/api/v1/geo`;
+const API_BASE_USER = `${API_BASE_URL}/api/v1/user`;
 
 const header = {
     method: "GET"
