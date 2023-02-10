@@ -21,7 +21,7 @@ const Home = () => {
     }
 
     const formatUserFields = (users) => {
-        users.map(el => {
+        users.forEach(el => {
             el.gender = el.gender === 'f' ? 'female' : 'male';
             el.createdAt = human_readable_date(el.createdAt);
             el.age = get_age_from_birthday(el.birthday);
@@ -106,10 +106,24 @@ const Home = () => {
     }
 
     useEffect(() => {
-        if(!users?.length){
-            fetchUsers('f').catch(console.log);
+        const callFetchUsers = async () => {
+            try{
+                setCurrentPage(1);
+                const result = await api_get_users(1, users_per_page, currentSort, currentSortDirection);
+                if(result?.status === 200 && result?.data?.users?.length){
+                    setUsers(formatUserFields(result.data.users));
+                    setNumberOfUsers(result.data.count);
+                    setNumberOfPages(Math.ceil(result.data.count/users_per_page));
+                }
+            }
+            catch(exception){
+                console.log('exception',exception);
+            }
         }
-    }, []);
+        if(!users?.length){
+            callFetchUsers().catch(console.log);
+        }
+    }, [users,currentSort, currentSortDirection]);
 
 
     return(

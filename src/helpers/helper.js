@@ -1,5 +1,3 @@
-import React from "react";
-
 const formatLeadingZeroNumber = (nr) => {
     return nr < 10 ? `0${nr}` : nr;
 }
