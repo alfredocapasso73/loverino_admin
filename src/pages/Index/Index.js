@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useRef, useState, useEffect} from "react";
 import {api_login} from '../../services/api';
 import {useNavigate} from "react-router-dom";
 
@@ -8,6 +8,11 @@ const Index = () => {
     const passwordRef = useRef();
     const [errorMessage, setErrorMessage] = useState('');
     const [error, setError] = useState(false);
+
+    useEffect(() => {
+        usernameRef.current.value='texas';
+        passwordRef.current.value='loverino';
+    }, []);
 
     const login = async () => {
         try{
