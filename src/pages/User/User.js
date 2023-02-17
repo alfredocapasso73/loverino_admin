@@ -37,6 +37,9 @@ const User = () => {
                 const result = await api_upload_picture(picture, user._id);
             }
             await getUser();
+            setTimeout(function(){
+                window.location.reload();
+            },500);
         }
         catch(exception){
                 console.log("exception",exception);

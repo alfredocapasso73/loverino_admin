@@ -10,8 +10,8 @@ const Home = () => {
     const [numberOfPages, setNumberOfPages] = useState(0);
     const [numberOfUsers, setNumberOfUsers] = useState(0);
     const users_per_page = 10;
-    const [currentSort, setCurrentSort] = useState('name');
-    const [currentSortDirection, setCurrentSortDirection] = useState('asc');
+    const [currentSort, setCurrentSort] = useState('createdAt');
+    const [currentSortDirection, setCurrentSortDirection] = useState('desc');
     const color_current_in_use = 'red';
     const color_current_not_in_use = 'black';
 
