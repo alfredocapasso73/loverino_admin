@@ -1,20 +1,25 @@
 import React, {useEffect, useState} from "react";
 import {api_get_users} from "../../services/api";
 import {get_age_from_birthday, human_readable_date} from '../../helpers/helper';
-import {useNavigate} from "react-router-dom";
+import {useParams, useNavigate, Link, useLocation} from "react-router-dom";
 
 const Home = () => {
+    const { search } = useLocation();
+    const params = useParams();
+    const tmp_sort_by = new URLSearchParams(search).get("sorting");
+    const tmp_sort_dir = new URLSearchParams(search).get("dir");
+    const sorting_by = tmp_sort_by ? tmp_sort_by : 'createdAt';
+    const sorting_dir = tmp_sort_dir ? tmp_sort_dir : 'desc';
+    const [sortBy, setSortBy] = useState(sorting_by);
+    const [sortDir, setSortDir] = useState(sorting_dir);
+
+
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(params.id);
     const [numberOfPages, setNumberOfPages] = useState(0);
     const [numberOfUsers, setNumberOfUsers] = useState(0);
     const users_per_page = 10;
-    const [currentSort, setCurrentSort] = useState('createdAt');
-    const [currentSortDirection, setCurrentSortDirection] = useState('desc');
-    const color_current_in_use = 'red';
-    const color_current_not_in_use = 'black';
-
     const userClicked = (id) => {
         const url = `/user/${id}`;
         navigate(url);
@@ -23,93 +28,31 @@ const Home = () => {
     const formatUserFields = (users) => {
         users.forEach(el => {
             el.gender = el.gender === 'f' ? 'female' : 'male';
-            el.createdAt = human_readable_date(el.createdAt);
-            el.age = get_age_from_birthday(el.birthday);
+            el.createdAt = el.createdAt ? human_readable_date(el.createdAt) : '';
+            el.age = el.birthday ? get_age_from_birthday(el.birthday) : '';
         });
         return users;
     }
 
-    const sort = async (field, direction, void_function) => {
-        if(!void_function){
-            setCurrentSort(field);
-            setCurrentSortDirection(direction);
-            setCurrentPage(1);
-            try{
-                const result = await api_get_users(1, users_per_page, field, direction);
-                if(result?.status === 200 && result?.data?.users?.length){
-                    setUsers(formatUserFields(result.data.users));
-                    setNumberOfUsers(result.data.count);
-                    setNumberOfPages(Math.ceil(result.data.count/users_per_page));
-                }
-            }
-            catch(exception){
-                console.log('exception',exception);
-            }
-        }
-    }
-
     const getArrowDown = (field) => {
-        let color = color_current_not_in_use;
-        let pointer = 'pointer';
-        let void_function = false;
-        if(field === currentSort && currentSortDirection === 'asc'){
-            color = color_current_in_use;
-            pointer = '';
-            void_function = true;
-        }
-        return <svg onClick={e => sort(field, 'asc', void_function)} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill={color} className={`bi bi-arrow-down ${pointer}`} viewBox="0 0 16 16">
+        return <a href={`/home/${currentPage}?sorting=${field}&dir=asc`}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" className={`bi bi-arrow-down pointer`} viewBox="0 0 16 16">
             <path fill="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
-        </svg>;
+        </svg></a>;
     }
 
     const getArrowUp = (field) => {
-        let color = color_current_not_in_use;
-        let pointer = 'pointer';
-        let void_function = false;
-        if(field === currentSort && currentSortDirection === 'desc'){
-            color = color_current_in_use;
-            pointer = '';
-            void_function = true;
-        }
-        return <svg onClick={e => sort(field, 'desc', void_function)} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill={color} className={`bi bi-arrow-up ${pointer}`} viewBox="0 0 16 16">
+        return <a href={`/home/${currentPage}?sorting=${field}&dir=desc`}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" className={`bi bi-arrow-up pointer`} viewBox="0 0 16 16">
             <path fill="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
-        </svg>;
+        </svg></a>;
     }
 
-
-
-
-    const fetchUsers = async (direction='f') => {
-        try{
-            const current_page = direction === 'f' ? currentPage +1 : currentPage -1;
-            console.log('current_page',current_page);
-            setCurrentPage(current_page);
-            const result = await api_get_users(current_page, users_per_page, currentSort, currentSortDirection);
-            if(result?.status === 200 && result?.data?.users?.length){
-                setUsers(formatUserFields(result.data.users));
-                setNumberOfUsers(result.data.count);
-                setNumberOfPages(Math.ceil(result.data.count/users_per_page));
-            }
-        }
-        catch(exception){
-            console.log('exception',exception);
-        }
-    }
-
-    const fetchUserFirstLast = (el) => {
-        if(el === 'prev' && currentPage !== 1){
-            return fetchUsers('b').catch(console.log);
-        }
-        if(el === 'next' && currentPage < numberOfPages){
-            return fetchUsers('f').catch(console.log);
-        }
-    }
 
     useEffect(() => {
         const callFetchUsers = async () => {
             try{
-                setCurrentPage(1);
-                const result = await api_get_users(1, users_per_page, currentSort, currentSortDirection);
+                setCurrentPage(params.page);
+                console.log("params.page",params.page);
+                const result = await api_get_users(params.page, users_per_page, sortBy, sortDir);
                 if(result?.status === 200 && result?.data?.users?.length){
                     setUsers(formatUserFields(result.data.users));
                     setNumberOfUsers(result.data.count);
@@ -120,10 +63,11 @@ const Home = () => {
                 console.log('exception',exception);
             }
         }
+        callFetchUsers().catch(console.log);
         if(!users?.length){
             callFetchUsers().catch(console.log);
         }
-    }, [users,currentSort, currentSortDirection]);
+    }, [params]);
 
 
     return(
@@ -238,19 +182,15 @@ const Home = () => {
                                                 <ul className="pagination">
                                                     {
                                                         numberOfPages > 1 &&
-                                                        <li className={`paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`} onClick={e => fetchUserFirstLast('prev')}>
-                                                            <div className="page-link pointer">
-                                                                Previous
-                                                            </div>
+                                                        <li className={`paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`} onClick={e => navigate(`/home/1`)}>
+                                                            <Link to={`/home/1`} className="page-link pointer">First</Link>
                                                         </li>
                                                     }
 
                                                     {
                                                         numberOfPages > 1 && currentPage > 1 &&
-                                                        <li className={`paginate_button page-item`} onClick={e => fetchUsers('b')}>
-                                                            <div className="page-link pointer">
-                                                                {currentPage-1}
-                                                            </div>
+                                                        <li className={`paginate_button page-item`} onClick={e => navigate(`/home/${currentPage-1}`)}>
+                                                            <Link to={`/home/${parseInt(currentPage)-1}`} className="page-link pointer">{parseInt(currentPage)-1}</Link>
                                                         </li>
                                                     }
 
@@ -262,19 +202,15 @@ const Home = () => {
 
                                                     {
                                                         numberOfPages > 1 && currentPage < numberOfPages &&
-                                                        <li className={`paginate_button page-item`} onClick={e => fetchUsers('f')}>
-                                                            <div className="page-link pointer">
-                                                                {currentPage+1}
-                                                            </div>
+                                                        <li className={`paginate_button page-item`} onClick={e => navigate(`/home/${parseInt(currentPage)+1}`)}>
+                                                            <Link to={`/home/${parseInt(currentPage)+1}`} className="page-link pointer">{parseInt(currentPage)+1}</Link>
                                                         </li>
                                                     }
 
                                                     {
                                                         numberOfPages > 1 &&
-                                                        <li className={`paginate_button page-item next ${currentPage === numberOfPages ? 'disabled' : ''}`} onClick={e => fetchUserFirstLast('next')}>
-                                                            <div className="page-link pointer">
-                                                                Next
-                                                            </div>
+                                                        <li className={`paginate_button page-item next ${currentPage === numberOfPages ? 'disabled' : ''}`}>
+                                                            <Link to={`/home/${numberOfPages}`} className="page-link pointer">Last</Link>
                                                         </li>
                                                     }
                                                 </ul>

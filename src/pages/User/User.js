@@ -10,6 +10,7 @@ import {
     api_delete_user
 } from '../../services/api';
 import {useParams, useNavigate} from "react-router-dom";
+import {get_age_from_birthday} from '../../helpers/helper';
 
 const User = () => {
     const params = useParams();
@@ -25,6 +26,8 @@ const User = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [fileUploadFailed, setFileUploadFailed] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [showImage, setShowImage] = useState(false);
+    const [showCurrentPicture, setShowCurrentPicture] = useState('');
 
     const fileChanged = async (files) => {
         if(!files.length){
@@ -137,6 +140,13 @@ const User = () => {
         }));
     }
 
+    const ageChanged = (value) => {
+        setUser((prevState) => ({
+            ...prevState,
+            birthday: value,
+        }));
+    }
+
     const regionChanged = async (region_id) => {
         userValueChanged('region', region_id);
         const city_result = await api_get_cities(region_id);
@@ -148,6 +158,23 @@ const User = () => {
     const deleteUser = () => {
         console.log("deleteUser");
         setShowModal(true);
+    }
+
+    const closeImage = () => {
+        setShowCurrentPicture('');
+        setShowImage(false);
+    }
+
+    const imageClicked = async (src) => {
+        try{
+            console.log("imageClicked:",src);
+            const url = src.replace('small-', 'big-')
+            setShowCurrentPicture(url);
+            setShowImage(true);
+        }
+        catch(exception){
+            console.log('exception',exception);
+        }
     }
 
     const confirmDeleteUser = async () => {
@@ -195,224 +222,242 @@ const User = () => {
         <>
             {
                 user &&
-                <div className="row">
-                    <div className="col-2">
-                        <div className="card">
-                            <div className="card-header">Pictures</div>
-                            <div className="card-body text-center">
-                                {
-                                    pictures?.length > 0 && pictures.map((pic, index) =>
-                                        <div key={index} style={{padding: '5px',width: '100%'}} className="relative_positioned">
-                                            <div className="img_with_trash">
-                                                <img src={pic.src} alt="" style={{width: '100%'}}/>
-                                                {
-                                                    pic.confirm_delete === 'y' &&
-                                                    <div className="container_confirm_remove_picture">
-                                                        <div style={{paddingTop: '30%'}}>
-                                                            <div onClick={confirmRemovePicture} className="a_div pointer" style={{fontWeight: 'bolder'}}>Remove</div>
-                                                            <div className="a_div" style={{fontWeight: 'bolder'}}>OR</div>
-                                                            <div onClick={cancelRemovePicture} className="a_div pointer" style={{fontWeight: 'bolder'}}>Cancel</div>
+                <div>
+                    {
+                        !showImage &&
+                        <div className="row">
+                            <div className="col-2">
+                                <div className="card">
+                                    <div className="card-header">Pictures</div>
+                                    <div className="card-body text-center">
+                                        {
+                                            pictures?.length > 0 && pictures.map((pic, index) =>
+                                                <div key={index} style={{padding: '5px',width: '100%'}} className="relative_positioned">
+                                                    <div className="img_with_trash">
+                                                        <img src={pic.src} alt="" style={{width: '100%'}} onClick={e => imageClicked(pic.src)} className="pointer"/>
+                                                        {
+                                                            pic.confirm_delete === 'y' &&
+                                                            <div className="container_confirm_remove_picture">
+                                                                <div style={{paddingTop: '30%'}}>
+                                                                    <div onClick={confirmRemovePicture} className="a_div pointer" style={{fontWeight: 'bolder'}}>Remove</div>
+                                                                    <div className="a_div" style={{fontWeight: 'bolder'}}>OR</div>
+                                                                    <div onClick={cancelRemovePicture} className="a_div pointer" style={{fontWeight: 'bolder'}}>Cancel</div>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        <div className="trash_can_picture"onClick={e => removePicture(pic.id)}>
+                                                            <img src="/img/icons8-delete-trash-15.png" />
                                                         </div>
                                                     </div>
-                                                }
-                                                <div className="trash_can_picture"onClick={e => removePicture(pic.id)}>
-                                                    <img src="/img/icons8-delete-trash-15.png" />
                                                 </div>
-                                            </div>
-                                        </div>
-                                    )
-                                }
-                                <div className="small font-italic text-muted mb-4">
-                                    {
-                                        !isUploading &&
-                                        <div>
-                                            <input
-                                                accept="image/png, image/jpeg, image/gif"
-                                                multiple
-                                                ref={uploadRef}
-                                                className="d-none"
-                                                type="file"
-                                                onChange={e => fileChanged(e.target.files)}
-                                            />
-                                            <button onClick={uploadFile} className="btn btn-success">
-                                                Upload pictures
-                                            </button>
+                                            )
+                                        }
+                                        <div className="small font-italic text-muted mb-4">
                                             {
-                                                fileUploadFailed &&
-                                                <div className="alert alert-danger">
-                                                    Upload filed!
+                                                !isUploading &&
+                                                <div>
+                                                    <input
+                                                        accept="image/png, image/jpeg, image/gif"
+                                                        multiple
+                                                        ref={uploadRef}
+                                                        className="d-none"
+                                                        type="file"
+                                                        onChange={e => fileChanged(e.target.files)}
+                                                    />
+                                                    <button onClick={uploadFile} className="btn btn-success">
+                                                        Upload pictures
+                                                    </button>
+                                                    {
+                                                        fileUploadFailed &&
+                                                        <div className="alert alert-danger">
+                                                            Upload filed!
+                                                        </div>
+                                                    }
                                                 </div>
                                             }
                                         </div>
-                                    }
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-10">
+                                <div className="card shadow mb-4">
+                                    <div className="card-header py-3">
+                                        {
+                                            user &&
+                                            <h6 className="m-0 font-weight-bold text-primary">
+                                                {user.name} - {user._id} - {get_age_from_birthday(user.birthday)} år gammal
+                                            </h6>
+                                        }
+                                    </div>
+                                    <div className="card-body">
+                                        <div>
+                                            <div className="row gx-3 mb-3">
+                                                <div className="col-md-6">
+                                                    <label className="small mb-1" htmlFor="inputFirstName">Name</label>
+                                                    <input className="form-control" id="inputFirstName" type="text" value={user.name} onChange={e => userValueChanged('name', e.target.value)}/>
+                                                </div>
+                                                <div className="col-md-6">
+                                                    <label className="small mb-1" htmlFor="inputLastName">Email</label>
+                                                    <input className="form-control" disabled={true} id="inputLastName" type="text" value={user.email} />
+                                                </div>
+                                            </div>
+                                            <div className="row gx-3 mb-3">
+                                                <div className="col-md-6">
+                                                    <label htmlFor="exampleFormControlSelect1">Region</label>
+                                                    <select className="form-control" id="exampleFormControlSelect1" value={user.region} onChange={e => regionChanged(e.target.value)}>
+                                                        {
+                                                            regions?.length && regions.map((region, index) =>
+                                                                <option value={region._id} key={index}>{region.name}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-6">
+                                                    <label htmlFor="exampleFormControlSelect1">City</label>
+                                                    <select className="form-control" value={user.city} id="exampleFormControlSelect1" onChange={e => userValueChanged('city', e.target.value)}>
+                                                        {
+                                                            cities?.length && cities.map((city, index) =>
+                                                                <option value={city._id} key={index}>{city.name}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="row gx-3 mb-3">
+                                                <div className="col-md-6">
+                                                    <label htmlFor="exampleFormControlSelect1">Active</label>
+                                                    <select value={user.active} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('active', e.target.value)}>
+                                                        <option value="true">TRUE</option>
+                                                        <option value="false">FALSE</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-6">
+                                                    <label htmlFor="exampleFormControlSelect1">Paying user</label>
+                                                    <select value={user.is_paying_user} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('is_paying_user', e.target.value)}>
+                                                        <option value="true">TRUE</option>
+                                                        <option value="false">FALSE</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="row gx-3 mb-3">
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Gender</label>
+                                                    <select value={user.gender} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('gender', e.target.value)}>
+                                                        <option value="m">Male</option>
+                                                        <option value="f">Female</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Search Gender</label>
+                                                    <select value={user.search_gender} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_gender', e.target.value)}>
+                                                        <option value="m">Male</option>
+                                                        <option value="f">Female</option>
+                                                        <option value="a">All</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Distance</label>
+                                                    <select value={user.search_distance} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_distance', e.target.value)}>
+                                                        <option value="close">Close</option>
+                                                        <option value="all">All</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label className="small mb-1" htmlFor="inputFirstName">Birthday</label>
+                                                    <input
+                                                        className="form-control"
+                                                        id="inputFirstName"
+                                                        type="text" value={user.birthday}
+                                                        onChange={e => userValueChanged('birthday', e.target.value)}/>
+                                                </div>
+                                            </div>
+                                            <div className="row gx-3 mb-3">
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Min age</label>
+                                                    <select value={user.search_min_age} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_min_age', e.target.value)}>
+                                                        {
+                                                            ages.map((age, index) =>
+                                                                <option value={age} key={index}>{age}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Max age</label>
+                                                    <select value={user.search_max_age} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_max_age', e.target.value)}>
+                                                        {
+                                                            ages.map((age, index) =>
+                                                                <option value={age} key={index}>{age}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Body Type</label>
+                                                    <select value={user.body_type} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('body_type', e.target.value)}>
+                                                        {
+                                                            bodyTypeOptions.map((body, index) =>
+                                                                <option value={body} key={index}>{body}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <label htmlFor="exampleFormControlSelect1">Height</label>
+                                                    <select value={user.height} className="form-control" id="exampleFormControlSelect1" onChange={e => userValueChanged('height', e.target.value)}>
+                                                        {
+                                                            get_height_array().map((height, index) =>
+                                                                <option value={height} key={index}>{height}</option>
+                                                            )
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="mb-3">
+                                                <label htmlFor="exampleFormControlTextarea1">Example textarea</label>
+                                                <textarea  value={user.description} onChange={e => userValueChanged('description', e.target.value)} className="form-control" id="exampleFormControlTextarea1"rows="3"></textarea>
+                                            </div>
+                                            <div className="row">
+                                                <div className="col-md-6">
+                                                    <button className="btn btn-primary" type="button" onClick={saveUser}>Save changes</button>
+                                                </div>
+                                                <div className="col-md-6" style={{textAlign: 'right'}}>
+                                                    <button className="btn btn-danger" type="button" onClick={deleteUser}>Delete user</button>
+                                                </div>
+                                            </div>
+                                            {
+                                                formSuccess &&
+                                                <div className="mb-3">
+                                                    <div className="alert alert-success alert-dismissible fade show mb-0" role="alert">
+                                                        <h5 className="alert-heading">Saving user</h5>
+                                                        The user has been saved
+                                                    </div>
+                                                </div>
+                                            }
+                                            {
+                                                formFailure &&
+                                                <div className="mb-3">
+                                                    <div className="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+                                                        <h5 className="alert-heading">Saving user</h5>
+                                                        The user could not be saved
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="col-6">
-                        <div className="card shadow mb-4">
-                            <div className="card-header py-3">
-                                {
-                                    user &&
-                                    <h6 className="m-0 font-weight-bold text-primary">
-                                        {user.name} - {user._id}
-                                    </h6>
-                                }
-                            </div>
-                            <div className="card-body">
-                                <div>
-                                    <div className="row gx-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label className="small mb-1" htmlFor="inputFirstName">Name</label>
-                                            <input className="form-control" id="inputFirstName" type="text" value={user.name} onChange={e => userValueChanged('name', e.target.value)}/>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="small mb-1" htmlFor="inputLastName">Email</label>
-                                            <input className="form-control" disabled={true} id="inputLastName" type="text" value={user.email} />
-                                        </div>
-                                    </div>
-                                    <div className="row gx-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label htmlFor="exampleFormControlSelect1">Region</label>
-                                            <select className="form-control" id="exampleFormControlSelect1" value={user.region} onChange={e => regionChanged(e.target.value)}>
-                                                {
-                                                    regions?.length && regions.map((region, index) =>
-                                                        <option value={region._id} key={index}>{region.name}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label htmlFor="exampleFormControlSelect1">City</label>
-                                            <select className="form-control" value={user.city} id="exampleFormControlSelect1" onChange={e => userValueChanged('city', e.target.value)}>
-                                                {
-                                                    cities?.length && cities.map((city, index) =>
-                                                        <option value={city._id} key={index}>{city.name}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="row gx-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label htmlFor="exampleFormControlSelect1">Active</label>
-                                            <select value={user.active} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('active', e.target.value)}>
-                                                <option value="true">TRUE</option>
-                                                <option value="false">FALSE</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label htmlFor="exampleFormControlSelect1">Paying user</label>
-                                            <select value={user.is_paying_user} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('is_paying_user', e.target.value)}>
-                                                <option value="true">TRUE</option>
-                                                <option value="false">FALSE</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="row gx-3 mb-3">
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Gender</label>
-                                            <select value={user.gender} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('gender', e.target.value)}>
-                                                <option value="m">Male</option>
-                                                <option value="f">Female</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Search Gender</label>
-                                            <select value={user.search_gender} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_gender', e.target.value)}>
-                                                <option value="m">Male</option>
-                                                <option value="f">Female</option>
-                                                <option value="a">All</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Distance</label>
-                                            <select value={user.search_distance} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_distance', e.target.value)}>
-                                                <option value="close">Close</option>
-                                                <option value="all">All</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label className="small mb-1" htmlFor="inputFirstName">Birthday</label>
-                                            <input className="form-control" id="inputFirstName" type="text" value={user.birthday} onChange={e => userValueChanged('birthday', e.target.value)}/>
-                                        </div>
-                                    </div>
-                                    <div className="row gx-3 mb-3">
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Min age</label>
-                                            <select value={user.search_min_age} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_min_age', e.target.value)}>
-                                                {
-                                                    ages.map((age, index) =>
-                                                        <option value={age} key={index}>{age}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Max age</label>
-                                            <select value={user.search_max_age} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('search_max_age', e.target.value)}>
-                                                {
-                                                    ages.map((age, index) =>
-                                                        <option value={age} key={index}>{age}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Body Type</label>
-                                            <select value={user.body_type} className="form-control" id="exampleFormControlSelect1"  onChange={e => userValueChanged('body_type', e.target.value)}>
-                                                {
-                                                    bodyTypeOptions.map((body, index) =>
-                                                        <option value={body} key={index}>{body}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label htmlFor="exampleFormControlSelect1">Height</label>
-                                            <select value={user.height} className="form-control" id="exampleFormControlSelect1" onChange={e => userValueChanged('height', e.target.value)}>
-                                                {
-                                                    get_height_array().map((height, index) =>
-                                                        <option value={height} key={index}>{height}</option>
-                                                    )
-                                                }
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label htmlFor="exampleFormControlTextarea1">Example textarea</label>
-                                        <textarea  value={user.description} onChange={e => userValueChanged('description', e.target.value)} className="form-control" id="exampleFormControlTextarea1"rows="3"></textarea>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col-md-6">
-                                            <button className="btn btn-primary" type="button" onClick={saveUser}>Save changes</button>
-                                        </div>
-                                        <div className="col-md-6" style={{textAlign: 'right'}}>
-                                            <button className="btn btn-danger" type="button" onClick={deleteUser}>Delete user</button>
-                                        </div>
-                                    </div>
-                                    {
-                                        formSuccess &&
-                                        <div className="mb-3">
-                                            <div className="alert alert-success alert-dismissible fade show mb-0" role="alert">
-                                                <h5 className="alert-heading">Saving user</h5>
-                                                The user has been saved
-                                            </div>
-                                        </div>
-                                    }
-                                    {
-                                        formFailure &&
-                                        <div className="mb-3">
-                                            <div className="alert alert-danger alert-dismissible fade show mb-0" role="alert">
-                                                <h5 className="alert-heading">Saving user</h5>
-                                                The user could not be saved
-                                            </div>
-                                        </div>
-                                    }
-                                </div>
+                    }
+                    {
+                        showImage &&
+                        <div className="row">
+                            <div className="col col-12 text-center pointer">
+                                <img src={showCurrentPicture} alt="" onClick={closeImage}/>
                             </div>
                         </div>
-                    </div>
+                    }
+
                     {
                         showModal &&
                         <div className="modal force_show" id="exampleModal" tabIndex="-1" role="dialog"

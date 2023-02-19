@@ -32,7 +32,7 @@ const Index = () => {
                 return;
             }
             localStorage.setItem("admin_token", result.data.admin_token);
-            return navigate("/home");
+            return navigate("/home/1");
         }
         catch(exception){
             console.log("exception",exception);

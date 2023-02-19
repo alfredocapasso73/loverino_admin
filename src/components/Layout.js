@@ -66,7 +66,7 @@ const Layout = () => {
                 </a>
                 <hr className="sidebar-divider my-0" />
                 <li className="nav-item active">
-                    <Link className="nav-link" to={'/home'}>
+                    <Link className="nav-link" to={'/home/1'}>
                         <i className="fas fa-fw fa-users"></i>
                         <span>Users</span>
                     </Link>
