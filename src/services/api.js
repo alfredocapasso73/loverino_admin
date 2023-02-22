@@ -111,7 +111,7 @@ export async function api_get_regions(){
 }
 
 export function api_convert_pictures(pictures){
-    const base_url = `${API_BASE_USER}/getImage/small-picture-`;
+    const base_url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/getImage/small-picture-`;
     const pic_array = [];
     pictures.map(el => {
         pic_array.push({src: `${base_url}${el}`, id: el});
@@ -182,7 +182,7 @@ export async function api_upload_picture(file, user_id){
             },
             body: formData
         };
-        const url = `${API_BASE}/uploadPictureAdmin`;
+        const url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/uploadPictureAdmin`;
         const response = await fetch(`${url}`, header);
         const data = await response.json();
         return {status: response.status, data: data};

@@ -40,9 +40,9 @@ const User = () => {
                 const result = await api_upload_picture(picture, user._id);
             }
             await getUser();
-            setTimeout(function(){
+            /*setTimeout(function(){
                 window.location.reload();
-            },500);
+            },500);*/
         }
         catch(exception){
                 console.log("exception",exception);
@@ -204,6 +204,7 @@ const User = () => {
                 if(city_result?.data?.cities?.length){
                     setCities(city_result.data.cities);
                 }
+                console.log("result.data.user.pictures",result.data.user.pictures);
                 const all_pics = api_convert_pictures(result.data.user.pictures);
                 all_pics.map(el => el.confirm_delete = 'n');
                 setPictures(all_pics);
