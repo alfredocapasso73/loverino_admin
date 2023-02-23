@@ -1,7 +1,6 @@
 const API_BASE_URL = process.env.REACT_APP_API_BASE;
 const API_BASE = `${API_BASE_URL}/api/v1/texas`;
 const API_BASE_GEO = `${API_BASE_URL}/api/v1/geo`;
-const API_BASE_USER = `${API_BASE_URL}/api/v1/user`;
 
 const header = {
     method: "GET"
@@ -110,15 +109,6 @@ export async function api_get_regions(){
     }
 }
 
-export function api_convert_pictures(pictures){
-    const base_url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/getImage/small-picture-`;
-    const pic_array = [];
-    pictures.map(el => {
-        pic_array.push({src: `${base_url}${el}`, id: el});
-    });
-    return pic_array;
-}
-
 export async function api_get_cities(region){
     try{
         const url_key = {auth: false, url: `${API_BASE_GEO}/city/${region}`, method: 'GET'};
@@ -157,12 +147,32 @@ export async function api_search_user(query){
     }
 }
 
+export function api_convert_pictures(pictures){
+    const base_url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/getImage/small-picture-`;
+    const pic_array = [];
+    pictures.map(el => {
+        pic_array.push({src: `${base_url}${el}`, id: el});
+    });
+    return pic_array;
+}
+
+
+
 export async function api_delete_picture(picture_id, user_id){
     try{
-        const url_key = {auth: true, url: `${API_BASE}/deletePicture`, method: 'POST'};
         const body = {picture_id: picture_id,user_id: user_id};
-        const request = await make_request(url_key, body);
-        return request;
+        const header = {
+            method: "DELETE"
+            ,headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("admin_token")}`
+            },
+            body: JSON.stringify(body)
+        };
+        const url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/deletePictureAdmin`;
+        const response = await fetch(`${url}`, header);
+        const data = await response.json();
+        return {status: response.status, data: data};
     }
     catch(exception){
         console.log('exception',exception);
