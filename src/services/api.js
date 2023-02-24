@@ -150,7 +150,7 @@ export async function api_search_user(query){
 export function api_convert_pictures(pictures){
     const base_url = `${process.env.REACT_APP_IMAGE_SERVER_BASE}/getImage/small-picture-`;
     const pic_array = [];
-    pictures.map(el => {
+    pictures.forEach(el => {
         pic_array.push({src: `${base_url}${el}`, id: el});
     });
     return pic_array;

@@ -37,12 +37,9 @@ const User = () => {
         setIsUploading(true);
         try{
             for await(const picture of files){
-                const result = await api_upload_picture(picture, user._id);
+                await api_upload_picture(picture, user._id);
             }
             await getUser();
-            /*setTimeout(function(){
-                window.location.reload();
-            },500);*/
         }
         catch(exception){
                 console.log("exception",exception);
@@ -59,7 +56,6 @@ const User = () => {
     const confirmRemovePicture = async () => {
         try{
             const result = await api_delete_picture(currentPictureToRemove, user._id);
-            console.log("result?",result);
             if(result?.status === 200){
                 await getUser();
             }
@@ -128,22 +124,13 @@ const User = () => {
         return heights;
     }
 
-    const [ages, setAges] = useState(get_age_array());
-
+    const ages = get_age_array();
     const bodyTypeOptions = ['XS','S','M','L','XL'];
-
 
     const userValueChanged = (field, value) => {
         setUser((prevState) => ({
             ...prevState,
             [field]: value,
-        }));
-    }
-
-    const ageChanged = (value) => {
-        setUser((prevState) => ({
-            ...prevState,
-            birthday: value,
         }));
     }
 
@@ -156,7 +143,6 @@ const User = () => {
     }
 
     const deleteUser = () => {
-        console.log("deleteUser");
         setShowModal(true);
     }
 
@@ -167,7 +153,6 @@ const User = () => {
 
     const imageClicked = async (src) => {
         try{
-            console.log("imageClicked:",src);
             const url = src.replace('small-', 'big-')
             setShowCurrentPicture(url);
             setShowImage(true);
@@ -181,9 +166,8 @@ const User = () => {
         try{
             const result = await api_delete_user(user._id);
             if(result?.status === 200 && result?.data?.message === 'user_removed'){
-                return navigate('/home');
+                return navigate('/home/1');
             }
-            console.log("result:",result);
         }
         catch(exception){
             console.log('exception',exception);
@@ -204,7 +188,6 @@ const User = () => {
                 if(city_result?.data?.cities?.length){
                     setCities(city_result.data.cities);
                 }
-                console.log("result.data.user.pictures",result.data.user.pictures);
                 const all_pics = api_convert_pictures(result.data.user.pictures);
                 all_pics.map(el => el.confirm_delete = 'n');
                 setPictures(all_pics);
@@ -216,8 +199,10 @@ const User = () => {
     }
 
     useEffect(() => {
-        getUser().catch(console.log);
-    }, []);
+        if(!user){
+            getUser().catch(console.log);
+        }
+    });
 
     return(
         <>
@@ -247,7 +232,7 @@ const User = () => {
                                                             </div>
                                                         }
                                                         <div className="trash_can_picture"onClick={e => removePicture(pic.id)}>
-                                                            <img src="/img/icons8-delete-trash-15.png" />
+                                                            <img src="/img/icons8-delete-trash-15.png" alt=""/>
                                                         </div>
                                                     </div>
                                                 </div>

@@ -10,8 +10,10 @@ const Home = () => {
     const tmp_sort_dir = new URLSearchParams(search).get("dir");
     const sorting_by = tmp_sort_by ? tmp_sort_by : 'createdAt';
     const sorting_dir = tmp_sort_dir ? tmp_sort_dir : 'desc';
-    const [sortBy, setSortBy] = useState(sorting_by);
-    const [sortDir, setSortDir] = useState(sorting_dir);
+    const sortBy = sorting_by;
+    const sortDir = sorting_dir;
+    //const [sortBy, setSortBy] = useState(sorting_by);
+    //const [sortDir, setSortDir] = useState(sorting_dir);
 
 
     const navigate = useNavigate();
@@ -51,7 +53,6 @@ const Home = () => {
         const callFetchUsers = async () => {
             try{
                 setCurrentPage(params.page);
-                console.log("params.page",params.page);
                 const result = await api_get_users(params.page, users_per_page, sortBy, sortDir);
                 if(result?.status === 200 && result?.data?.users?.length){
                     setUsers(formatUserFields(result.data.users));
@@ -64,10 +65,7 @@ const Home = () => {
             }
         }
         callFetchUsers().catch(console.log);
-        if(!users?.length){
-            callFetchUsers().catch(console.log);
-        }
-    }, [params]);
+    }, [params, sortBy, sortDir]);
 
 
     return(
