@@ -52,6 +52,22 @@ export async function api_login(username, password){
     }
 }
 
+export async function api_get_matches(current_page, matches_per_page){
+    try{
+        const url_key = {auth: true, url: `${API_BASE}/getMatches`, method: 'POST'};
+        const body = {
+            matches_per_page: matches_per_page
+            ,current_page: current_page
+        };
+        const request = await make_request(url_key, body);
+        return request;
+    }
+    catch(exception){
+        console.log('exception',exception);
+        throw exception;
+    }
+}
+
 export async function api_get_users(current_page, users_per_page, currentSort, currentSortDirection){
     try{
         const url_key = {auth: true, url: `${API_BASE}/getUsers`, method: 'POST'};

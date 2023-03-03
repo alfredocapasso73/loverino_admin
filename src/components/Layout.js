@@ -71,6 +71,12 @@ const Layout = () => {
                         <span>Users</span>
                     </Link>
                 </li>
+                <li className="nav-item">
+                    <Link className="nav-link" to={'/match/1'}>
+                        <i className="fas fa-fw fa-heart"></i>
+                        <span>Matches</span>
+                    </Link>
+                </li>
                 <hr className="sidebar-divider" />
                 <div className="sidebar-heading">
                     Tools
