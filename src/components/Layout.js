@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Navigate, useOutlet, Link} from 'react-router-dom';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useLocation} from "react-router-dom";
 import {api_search_user} from "../services/api";
 
 const Layout = () => {
@@ -9,6 +9,9 @@ const Layout = () => {
     const [showLogoutDropDown, setShowLogoutDropDown] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const { pathname } = useLocation();
+    const base = `/${pathname.slice(1).split("/").shift()}`;
+    console.log("base",base);
 
     if(!window.localStorage.getItem('admin_token')){
         return <Navigate to="/"/>
@@ -65,13 +68,13 @@ const Layout = () => {
                     <div className="sidebar-brand-text mx-3 loverino_logo">Loverino Admin</div>
                 </a>
                 <hr className="sidebar-divider my-0" />
-                <li className="nav-item active">
+                <li className={`nav-item ${base === '/home' ? 'active' : ''}`}>
                     <Link className="nav-link" to={'/home/1'}>
                         <i className="fas fa-fw fa-users"></i>
                         <span>Users</span>
                     </Link>
                 </li>
-                <li className="nav-item">
+                <li className={`nav-item ${base === '/match' ? 'active' : ''}`}>
                     <Link className="nav-link" to={'/match/1'}>
                         <i className="fas fa-fw fa-heart"></i>
                         <span>Matches</span>
